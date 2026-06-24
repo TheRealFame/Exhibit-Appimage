@@ -1,10 +1,8 @@
 name: AppImage
-
 on:
   push:
   pull_request:
   workflow_dispatch:
-
 jobs:
   appimage:
     name: "AppImage"
@@ -23,12 +21,23 @@ jobs:
             libglib2.0-dev \
             libgtk-4-dev \
             libadwaita-1-dev \
-            libf3d-dev \
-            libf3d-gl-dev \
             desktop-file-utils \
             appstream \
             wget \
-            file
+            file \
+            cmake \
+            libvtk9-dev \
+            libopengl-dev
+
+      - name: Install F3D from source
+        run: |
+          git clone --depth=1 --branch v2.5.0 https://github.com/f3d-app/f3d.git /tmp/f3d
+          cmake -S /tmp/f3d -B /tmp/f3d-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DF3D_MODULE_EXTERNAL_RENDERING=ON
+          cmake --build /tmp/f3d-build --parallel $(nproc)
+          sudo cmake --install /tmp/f3d-build
 
       - name: Install appimage-builder
         run: |
