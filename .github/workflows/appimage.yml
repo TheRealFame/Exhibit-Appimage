@@ -34,8 +34,7 @@ jobs:
           git clone --depth=1 --branch v2.5.0 https://github.com/f3d-app/f3d.git /tmp/f3d
           cmake -S /tmp/f3d -B /tmp/f3d-build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr \
-            -DF3D_MODULE_EXTERNAL_RENDERING=ON
+            -DCMAKE_INSTALL_PREFIX=/usr
           cmake --build /tmp/f3d-build --parallel $(nproc)
           sudo cmake --install /tmp/f3d-build
 
