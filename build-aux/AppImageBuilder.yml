@@ -1,0 +1,31 @@
+version: 1
+
+AppDir:
+  path: ./AppDir
+  app_info:
+    id: io.github.nokse22.Exhibit
+    name: Exhibit
+    icon: io.github.nokse22.Exhibit
+    version: 1.6.0
+    exec: bin/exhibit
+    exec_args: $@
+  files:
+    include: []
+    exclude:
+    - usr/share/doc
+    - usr/share/man
+    - usr/share/gtk-doc
+  runtime:
+    env:
+      GIO_EXTRA_MODULES: $APPDIR/usr/lib/gio/modules
+      LD_LIBRARY_PATH: $APPDIR/usr/lib:$APPDIR/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+      PATH: $APPDIR/usr/bin:$PATH
+  test:
+    fedora-30:
+      image: appimagecrafters/appimage-test-env-fedora-30:latest
+      command: ./AppRun --version
+
+AppImage:
+  update-information: none
+  sign-key: none
+  arch: x86_64
