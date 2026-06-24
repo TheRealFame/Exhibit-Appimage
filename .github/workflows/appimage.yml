@@ -27,7 +27,10 @@ jobs:
             file \
             cmake \
             libvtk9-dev \
-            libopengl-dev
+            libopengl-dev \
+            fuse \
+            elfutils \
+            patchelf
 
       - name: Install F3D from source
         run: |
@@ -40,9 +43,7 @@ jobs:
 
       - name: Install appimage-builder
         run: |
-          wget https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.0.0/appimage-builder-1.0.0-x86_64.AppImage
-          chmod +x appimage-builder-1.0.0-x86_64.AppImage
-          sudo mv appimage-builder-1.0.0-x86_64.AppImage /usr/local/bin/appimage-builder
+          pip install appimage-builder --break-system-packages
 
       - name: Build project
         run: |
