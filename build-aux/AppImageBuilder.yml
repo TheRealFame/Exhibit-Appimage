@@ -10,7 +10,9 @@ AppDir:
     exec: bin/exhibit
     exec_args: $@
   files:
-    include: []
+    include:
+    - usr/bin/python3
+    - usr/lib/python3*
     exclude:
     - usr/share/doc
     - usr/share/man
@@ -20,6 +22,7 @@ AppDir:
       GIO_EXTRA_MODULES: $APPDIR/usr/lib/gio/modules
       LD_LIBRARY_PATH: $APPDIR/usr/lib:$APPDIR/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       PATH: $APPDIR/usr/bin:$PATH
+      PYTHONPATH: $APPDIR/usr/share/exhibit:$APPDIR/usr/lib/python3.12/site-packages
   test:
     fedora-30:
       image: appimagecrafters/appimage-test-env-fedora-30:latest
