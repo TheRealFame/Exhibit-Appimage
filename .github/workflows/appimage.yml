@@ -30,7 +30,8 @@ jobs:
             libopengl-dev \
             fuse \
             elfutils \
-            patchelf
+            patchelf \
+            gettext
 
       - name: Install F3D from source
         run: |
