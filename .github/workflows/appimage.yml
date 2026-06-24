@@ -60,7 +60,9 @@ jobs:
           mv builddir/AppDir .
           # Copy Python interpreter and libraries into AppDir
           mkdir -p AppDir/usr/bin AppDir/usr/lib AppDir/usr/lib/x86_64-linux-gnu
-          cp -a /usr/bin/python3 AppDir/usr/bin/
+          # Copy actual Python binary (resolve symlink)
+          cp -L /usr/bin/python3 AppDir/usr/bin/python3
+          # Copy Python libraries
           cp -a /usr/lib/python3.* AppDir/usr/lib/
           cp -a /usr/lib/x86_64-linux-gnu/libpython3.*so* AppDir/usr/lib/x86_64-linux-gnu/ 2>/dev/null || true
           # Create AppRun wrapper
