@@ -22,6 +22,7 @@ jobs:
             ninja-build \
             python3 \
             python3-pip \
+            python3-pybind11 \
             libglib2.0-dev \
             libgtk-4-dev \
             libadwaita-1-dev \
@@ -44,9 +45,15 @@ jobs:
           git clone --depth=1 --branch v2.5.0 https://github.com/f3d-app/f3d.git /tmp/f3d
           cmake -S /tmp/f3d -B /tmp/f3d-build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DF3D_BUILD_APPLICATION=OFF \
+            -DF3D_MODULE_UI=OFF \
+            -DF3D_BINDINGS_PYTHON=ON
           cmake --build /tmp/f3d-build --parallel $(nproc)
           sudo cmake --install /tmp/f3d-build
+          # Find where f3d Python module was installed
+          find /usr -name "f3d" -type d -path "*/python*" 2>/dev/null || true
+          find /usr -name "f3d*.so" 2>/dev/null || true
 
       - name: Download appimagetool
         run: |
