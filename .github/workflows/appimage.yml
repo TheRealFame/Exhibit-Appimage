@@ -80,9 +80,25 @@ jobs:
           cp -r /usr/lib/python3/dist-packages/gi AppDir/usr/lib/python3/dist-packages/
           cp /usr/lib/girepository-1.0/*.typelib AppDir/usr/lib/girepository-1.0/
           
-          # Patch exhibit script to use APPDIR
-          sed -i "s|pkgdatadir = '/usr/share/exhibit'|pkgdatadir = os.path.join(os.environ.get('APPDIR', ''), 'usr/share/exhibit')|" AppDir/usr/bin/exhibit
-          sed -i "s|localedir = '/usr/share/locale'|localedir = os.path.join(os.environ.get('APPDIR', ''), 'usr/share/locale')|" AppDir/usr/bin/exhibit
+          # Rename original exhibit script and create wrapper
+          mv AppDir/usr/bin/exhibit AppDir/usr/bin/exhibit.real
+          cat > AppDir/usr/bin/exhibit << 'EOF'
+          #!/usr/bin/env python3
+          import os
+          import sys
+          # Set paths relative to APPDIR
+          appdir = os.environ.get('APPDIR', '')
+          if appdir:
+              os.environ['PYTHONPATH'] = os.path.join(appdir, 'usr/share/exhibit') + ':' + os.environ.get('PYTHONPATH', '')
+              # Monkey-patch sys.argv to pass through to the real script
+              sys.argv[0] = os.path.join(appdir, 'usr/bin/exhibit.real')
+          exec(open(os.path.join(appdir, 'usr/bin/exhibit.real') if appdir else '/usr/bin/exhibit.real').read())
+          EOF
+          chmod +x AppDir/usr/bin/exhibit
+          
+          # Patch the real script to use APPDIR for paths
+          sed -i "s|^pkgdatadir = '/usr/share/exhibit'|pkgdatadir = os.path.join(os.environ.get('APPDIR', ''), 'usr/share/exhibit') if os.environ.get('APPDIR') else '/usr/share/exhibit'|" AppDir/usr/bin/exhibit.real
+          sed -i "s|^localedir = '/usr/share/locale'|localedir = os.path.join(os.environ.get('APPDIR', ''), 'usr/share/locale') if os.environ.get('APPDIR') else '/usr/share/locale'|" AppDir/usr/bin/exhibit.real
           
           # Copy desktop file and icon
           cp AppDir/usr/share/applications/io.github.nokse22.Exhibit.desktop AppDir/
@@ -98,7 +114,7 @@ jobs:
           export GI_TYPELIB_PATH="${APPDIR}/usr/lib/girepository-1.0:${GI_TYPELIB_PATH}"
           export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS}"
           export GSETTINGS_SCHEMA_DIR="${APPDIR}/usr/share/glib-2.0/schemas:${GSETTINGS_SCHEMA_DIR}"
-          exec "${APPDIR}/usr/bin/python3" "${APPDIR}/usr/bin/exhibit" "$@"
+          exec "${APPDIR}/usr/bin/exhibit" "$@"
           EOF
           chmod +x AppDir/AppRun
           
