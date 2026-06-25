@@ -48,11 +48,10 @@ jobs:
           cmake --build /tmp/f3d-build --parallel $(nproc)
           sudo cmake --install /tmp/f3d-build
 
-      - name: Install linuxdeploy and plugins
+      - name: Download appimagetool
         run: |
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage || exit 1
-          wget https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh || exit 1
-          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage || exit 1
+          chmod +x appimagetool-x86_64.AppImage
 
       - name: Build project
         run: |
@@ -60,17 +59,44 @@ jobs:
           DESTDIR=AppDir ninja -C builddir install
           mv builddir/AppDir .
 
-      - name: Build AppImage with linuxdeploy
+      - name: Build AppImage
         run: |
-          export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-          export QMAKE=/usr/bin/qmake6
-          export LINUXDEPLOY_PLUGIN_GTK=./linuxdeploy-plugin-gtk.sh
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
-            --plugin gtk \
-            --executable AppDir/usr/bin/exhibit \
-            --desktop-file AppDir/usr/share/applications/io.github.nokse22.Exhibit.desktop \
-            --icon-file AppDir/usr/share/icons/hicolor/scalable/apps/io.github.nokse22.Exhibit.svg \
-            --output appimage
+          # Copy Python interpreter and libraries
+          mkdir -p AppDir/usr/bin AppDir/usr/lib
+          cp -L /usr/bin/python3 AppDir/usr/bin/python3
+          cp -r /usr/lib/python3.* AppDir/usr/lib/
+          cp /usr/lib/x86_64-linux-gnu/libpython3.*so* AppDir/usr/lib/
+          
+          # Copy GTK and Adwaita libraries
+          ldd /usr/lib/x86_64-linux-gnu/libgtk-4.so.1 2>/dev/null | grep "=> /" | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+          ldd /usr/lib/x86_64-linux-gnu/libadwaita-1.so.0 2>/dev/null | grep "=> /" | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+          
+          # Copy GI module and typelibs
+          mkdir -p AppDir/usr/lib/python3/dist-packages AppDir/usr/lib/girepository-1.0
+          cp -r /usr/lib/python3/dist-packages/gi AppDir/usr/lib/python3/dist-packages/
+          cp /usr/lib/girepository-1.0/*.typelib AppDir/usr/lib/girepository-1.0/
+          
+          # Copy desktop file and icon
+          cp AppDir/usr/share/applications/io.github.nokse22.Exhibit.desktop AppDir/
+          cp AppDir/usr/share/icons/hicolor/scalable/apps/io.github.nokse22.Exhibit.svg AppDir/.DirIcon
+          rsvg-convert AppDir/.DirIcon -o AppDir/io.github.nokse22.Exhibit.png
+          
+          # Create AppRun
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          export PATH="${APPDIR}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH}"
+          export PYTHONPATH="${APPDIR}/usr/share/exhibit:${APPDIR}/usr/lib/python3/dist-packages:${PYTHONPATH}"
+          export GI_TYPELIB_PATH="${APPDIR}/usr/lib/girepository-1.0:${GI_TYPELIB_PATH}"
+          export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS}"
+          export GSETTINGS_SCHEMA_DIR="${APPDIR}/usr/share/glib-2.0/schemas:${GSETTINGS_SCHEMA_DIR}"
+          exec "${APPDIR}/usr/bin/python3" "${APPDIR}/usr/bin/exhibit" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          
+          # Extract and run appimagetool
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          ./squashfs-root/AppRun AppDir
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
