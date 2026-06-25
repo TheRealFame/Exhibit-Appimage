@@ -78,7 +78,9 @@ jobs:
           # Copy GI module and typelibs
           mkdir -p AppDir/usr/lib/python3/dist-packages AppDir/usr/lib/girepository-1.0
           cp -r /usr/lib/python3/dist-packages/gi AppDir/usr/lib/python3/dist-packages/
-          cp /usr/lib/girepository-1.0/*.typelib AppDir/usr/lib/girepository-1.0/
+          cp /usr/lib/x86_64-linux-gnu/girepository-1.0/*.typelib AppDir/usr/lib/girepository-1.0/ 2>/dev/null || true
+          # Ensure Adwaita typelib is copied
+          find /usr -name "Adw-*.typelib" -exec cp {} AppDir/usr/lib/girepository-1.0/ \;
           
           # Rename original exhibit script and create wrapper
           mv AppDir/usr/bin/exhibit AppDir/usr/bin/exhibit.real

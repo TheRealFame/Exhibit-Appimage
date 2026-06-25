@@ -1,0 +1,4 @@
+#! /usr/bin/python3.14
+
+def example_function(some_argument):
+    pass
