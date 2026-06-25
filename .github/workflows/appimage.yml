@@ -61,15 +61,19 @@ jobs:
 
       - name: Build AppImage
         run: |
-          # Copy Python interpreter and libraries
+          # Copy Python interpreter and libraries (but NOT system libraries like libc)
           mkdir -p AppDir/usr/bin AppDir/usr/lib
           cp -L /usr/bin/python3 AppDir/usr/bin/python3
           cp -r /usr/lib/python3.* AppDir/usr/lib/
           cp /usr/lib/x86_64-linux-gnu/libpython3.*so* AppDir/usr/lib/
           
-          # Copy GTK and Adwaita libraries
+          # Copy GTK and Adwaita libraries (exclude system libraries)
           ldd /usr/lib/x86_64-linux-gnu/libgtk-4.so.1 2>/dev/null | grep "=> /" | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
           ldd /usr/lib/x86_64-linux-gnu/libadwaita-1.so.0 2>/dev/null | grep "=> /" | awk '{print $3}' | xargs -I {} cp {} AppDir/usr/lib/ 2>/dev/null || true
+          
+          # Remove system libraries that should come from host
+          rm -f AppDir/usr/lib/libc.so.* AppDir/usr/lib/libm.so.* AppDir/usr/lib/libdl.so.* AppDir/usr/lib/libpthread.so.*
+          rm -f AppDir/usr/lib/ld-*.so.*
           
           # Copy GI module and typelibs
           mkdir -p AppDir/usr/lib/python3/dist-packages AppDir/usr/lib/girepository-1.0
