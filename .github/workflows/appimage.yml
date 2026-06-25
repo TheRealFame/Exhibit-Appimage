@@ -55,6 +55,7 @@ jobs:
 
       - name: Build project
         run: |
+          rm -rf AppDir builddir
           meson setup builddir --prefix=/usr
           DESTDIR=AppDir ninja -C builddir install
           mv builddir/AppDir .
