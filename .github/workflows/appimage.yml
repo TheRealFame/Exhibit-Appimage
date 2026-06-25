@@ -119,6 +119,7 @@ jobs:
           cp /usr/lib/x86_64-linux-gnu/libopensubdiv*.so* AppDir/usr/lib/ 2>/dev/null || true
           cp /usr/lib/x86_64-linux-gnu/libusd*.so* AppDir/usr/lib/ 2>/dev/null || true
           cp /usr/lib/x86_64-linux-gnu/libboost_*.so* AppDir/usr/lib/ 2>/dev/null || true
+          cp /usr/lib/x86_64-linux-gnu/libjsoncpp.so* AppDir/usr/lib/ 2>/dev/null || true
           # Copy OpenGL and other common libraries
           cp /usr/lib/x86_64-linux-gnu/libGL*.so* AppDir/usr/lib/ 2>/dev/null || true
           cp /usr/lib/x86_64-linux-gnu/libEGL*.so* AppDir/usr/lib/ 2>/dev/null || true
