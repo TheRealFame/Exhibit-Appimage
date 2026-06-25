@@ -80,6 +80,10 @@ jobs:
           cp -r /usr/lib/python3/dist-packages/gi AppDir/usr/lib/python3/dist-packages/
           cp /usr/lib/girepository-1.0/*.typelib AppDir/usr/lib/girepository-1.0/
           
+          # Patch exhibit script to use APPDIR
+          sed -i "s|pkgdatadir = '/usr/share/exhibit'|pkgdatadir = os.path.join(os.environ.get('APPDIR', ''), 'usr/share/exhibit')|" AppDir/usr/bin/exhibit
+          sed -i "s|localedir = '/usr/share/locale'|localedir = os.path.join(os.environ.get('APPDIR', ''), 'usr/share/locale')|" AppDir/usr/bin/exhibit
+          
           # Copy desktop file and icon
           cp AppDir/usr/share/applications/io.github.nokse22.Exhibit.desktop AppDir/
           cp AppDir/usr/share/icons/hicolor/scalable/apps/io.github.nokse22.Exhibit.svg AppDir/.DirIcon
